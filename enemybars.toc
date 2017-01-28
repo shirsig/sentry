@@ -1,0 +1,7 @@
+## Interface: 11000
+## Title: enemybars
+## Notes: enemybars
+## Author: shirsig
+## SavedVariables: enemybars_settings
+enemybars.lua
+data.lua
