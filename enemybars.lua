@@ -229,6 +229,7 @@ function Event()
 		for _, pattern in PATTERNS do
 			for unitName, spell in string.gfind(arg1, pattern) do
 				CaptureEvent(unitName, spell)
+				return
 			end
 		end
 	elseif event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE' then
