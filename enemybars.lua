@@ -177,7 +177,7 @@ function Setup()
 		f.level:SetJustifyH'RIGHT'
 		f.level:SetFont([[Fonts\FRIZQT__.TTF]], 12)
 		f.level:SetShadowOffset(1, -1)
-		f.flash = CreateFrame('Frame', nil, f)
+		f.flash = CreateFrame('Frame', 'enemybarflash' .. i, f)
 		f.flash:SetWidth(180)
 		f.flash:SetHeight(70)
 		f.flash:SetPoint('CENTER', 0, -7)
@@ -337,7 +337,7 @@ function ShowFrame(unitName, frame)
 	BOTTOM = frame
 
 	frame.name:SetText(unitName)
-	-- UIFrameFlash(frame.flash, .2, .5, .7, nil, .1, 0)
+	UIFrameFlash(frame.flash, .2, .5, .7, nil, .1, 0)
 
 	frame:ClearAllPoints()
 	frame:SetPoint('TOP', frame.pred, 'BOTTOM', 0, 0)
