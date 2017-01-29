@@ -102,6 +102,7 @@ local SPLL_CASTS = "(.+) casts (.+) on (.+)%'s .+%."
 local SPLL_CASTS2 = "(.+) casts (.+)%."
 local SPLL_GAINS = "(.+) gains ([^%d].*)%."
 local SPLL_GAINS2 = "(.+) gains ([^%d].*)% %(%d+%)%."
+-- TODO other gains patterns somehow also for friendly units?
 local SPLL_BPERFORM = "(.+) begins to perform (.+)%."
 local SPLL_BCAST = "(.+) begins to cast (.+)%."
 
@@ -254,12 +255,10 @@ function Event()
 			CaptureEvent(unitName, spell)
 		end
 		for unitName, spell in string.gfind(arg1, SPLL_GAINS) do
-			--GAINS IS NOT WORKING
 			CaptureEvent(unitName, enemybars_SelfBuffs[spell] and spell)
 		end
 		for unitName in string.gfind(arg1, SPLL_GAINS2) do
-			--GAINS IS NOT WORKING
-			CaptureEvent(unitName)
+			CaptureEvent(unitName, enemybars_SelfBuffs[spell] and spell)
 		end
 		for unitName, spell in string.gfind(arg1, SPLL_BPERFORM) do
 			CaptureEvent(unitName, spell)
