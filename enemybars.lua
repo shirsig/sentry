@@ -201,7 +201,7 @@ function Setup()
 	this:RegisterEvent'UPDATE_MOUSEOVER_UNIT'
 	this:RegisterEvent'PLAYER_TARGET_CHANGED'
 
-	SLASH_ENEMYBARS1 = '/enemybars'
+	_G.SLASH_ENEMYBARS1 = '/enemybars'
 	SlashCmdList.ENEMYBARS = SlashCommand
 	
 	enemybars_settings = enemybars_settings or {}
