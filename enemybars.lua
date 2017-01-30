@@ -6,7 +6,6 @@ local MAXATTACKFRAMES = 7
 local ANCHOR = CreateFrame('Frame', nil, UIParent)
 ANCHOR:SetWidth(160)
 ANCHOR:SetHeight(18 * MAXATTACKFRAMES)
-ANCHOR:SetPoint('TOP', 0, -3)
 ANCHOR:SetMovable(true)
 ANCHOR:SetClampedToScreen(true)
 ANCHOR:SetScript('OnEvent', function () Event() end)
@@ -142,8 +141,7 @@ function Setup()
 		f:SetScript('OnMouseUp', function()
 			OnClick()
 			ANCHOR:StopMovingOrSizing()
-			enemybars_settings.framePos_L = ANCHOR:GetLeft()
-			enemybars_settings.framePos_T = ANCHOR:GetTop()
+			enemybars_settings.x, enemybars_settings.y = ANCHOR:GetCenter()
 		end)
 		f:SetWidth(160)
 		f:SetHeight(18)
@@ -205,9 +203,11 @@ function Setup()
 	_G.SLASH_ENEMYBARS1 = '/enemybars'
 	SlashCmdList.ENEMYBARS = SlashCommand
 	
-	enemybars_settings = enemybars_settings or {}
-	if enemybars_settings.framepos_L or enemybars_settings.framepos_T then
-		ANCHOR:SetPoint('TOPLEFT', 'UIParent', 'BOTTOMLEFT', enemybars_settings.framepos_L, enemybars_settings.framepos_T)
+	_G.enemybars_settings = enemybars_settings or {}
+	if enemybars_settings.x then
+		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', enemybars_settings.x, enemybars_settings.y)
+	else
+		ANCHOR:SetPoint('TOP', 0, -3)
 	end
 	enemybars_settings.scale = enemybars_settings.scale or 1
 	SetEffectiveScale(ANCHOR, enemybars_settings.scale, UIParent)
@@ -235,6 +235,7 @@ function Event()
 		end
 	elseif event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE' then
 	elseif event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF' or event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS' then
+		tinsert(auctionlog, {event=event, message=arg1})
 		for unitName, spell, targetName, damage in string.gfind(arg1, SPLL_HEALCRIT) do
 			CaptureEvent(unitName, spell)
 			CaptureEvent(targetName)	
