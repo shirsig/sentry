@@ -235,7 +235,7 @@ function Event()
 		end
 	elseif event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE' then
 	elseif event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF' or event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS' then
-		tinsert(auctionlog, {event=event, message=arg1})
+		-- tinsert(auctionlog, {event=event, message=arg1})
 		for unitName, spell, targetName, damage in string.gfind(arg1, SPLL_HEALCRIT) do
 			CaptureEvent(unitName, spell)
 			CaptureEvent(targetName)	
