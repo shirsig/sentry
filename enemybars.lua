@@ -238,24 +238,10 @@ function Event()
 		tinsert(auctionlog, {event=event, message=arg1})
 		for _, pattern in {SPLL_HEALCRIT, SPLL_HEAL, SPLL_CAST, SPLL_CASTS} do
 			for unitName, spell, targetName in string.gfind(arg1, pattern) do
-				if strupper(targetName) ~= strupper(YOU) then
-					CaptureEvent(unitName, spell)
-					CaptureEvent(targetName)
-				end
+				CaptureEvent(unitName, spell)
+				CaptureEvent(targetName)
 				return
 			end
-		end
-		for unitName, spell, targetName in string.gfind(arg1, SPLL_HEAL) do
-			CaptureEvent(unitName, spell)
-			CaptureEvent(targetName)
-		end
-		for unitName, spell, targetName in string.gfind(arg1, SPLL_CAST) do
-			CaptureEvent(unitName, spell)
-			CaptureEvent(targetName)
-		end
-		for unitName, spell, targetName in string.gfind(arg1, SPLL_CASTS) do
-			CaptureEvent(unitName, spell)
-			CaptureEvent(targetName)
 		end
 		for unitName, spell in string.gfind(arg1, SPLL_CASTS2) do
 			CaptureEvent(unitName, spell)
@@ -299,7 +285,7 @@ function CaptureEvent(unitName, spell)
 		end
 	end
 
-	if unitName == UnitName'player' or unitName == UnitName'pet' or unitName == UNKNOWNOBJECT then
+	if strupper(unitName) == strupper(YOU) or unitName == UnitName'pet' or unitName == UNKNOWNOBJECT then
 		return
 	end
 
