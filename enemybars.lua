@@ -235,12 +235,17 @@ function Event()
 		end
 	elseif event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_DAMAGE' then
 	elseif event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF' or event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS' then
-		-- tinsert(auctionlog, {event=event, message=arg1})
-		for unitName, spell, targetName, damage in string.gfind(arg1, SPLL_HEALCRIT) do
-			CaptureEvent(unitName, spell)
-			CaptureEvent(targetName)	
+		tinsert(auctionlog, {event=event, message=arg1})
+		for _, pattern in {SPLL_HEALCRIT, SPLL_HEAL, SPLL_CAST, SPLL_CASTS} do
+			for unitName, spell, targetName in string.gfind(arg1, pattern) do
+				if strupper(targetName) ~= strupper(YOU) then
+					CaptureEvent(unitName, spell)
+					CaptureEvent(targetName)
+				end
+				return
+			end
 		end
-		for unitName, spell, targetName, damage in string.gfind(arg1, SPLL_HEAL) do
+		for unitName, spell, targetName in string.gfind(arg1, SPLL_HEAL) do
 			CaptureEvent(unitName, spell)
 			CaptureEvent(targetName)
 		end
