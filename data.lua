@@ -1,4 +1,83 @@
-enemybars_SelfBuffs = {
+enemybars_PATTERNS = {
+	"(.+)'s (.+) hits .+ for %d+%.",
+	"(.+)'s (.+) crits .+ for %d+%.",
+	"(.+)'s (.+) hits %s for %d+ .+ damage%.",
+	"(.+)'s (.+) crits %s for %d+ .+ damage%.",
+	"(.+) begins to cast (.+)%.",
+	"(.+) casts (.+)%.",
+	"(.+) casts (.+) on .+%.",
+	"(.+) begins to perform (.+)%.",
+	"(.+) performs (.+)%.",
+	"(.+) performs (.+) on .+%.",
+	"(.+)'s (.+) drains %d+ .+ from .+%.",
+	"(.+)'s (.+) is absorbed by .+%.",
+	"You absorb (.+)'s (.+)%.",
+	"You parry (.+)'s (.+)",
+	"(.+)'s (.+) was parried%.",
+	"(.+)'s (.+) was parried by .+%.",
+	"(.+)'s (.+) was blocked%.",
+	"(.+)'s (.+) was blocked by .+%.",
+	"(.+)'s (.+) was deflected%.",
+	"(.+)'s (.+) was deflected by .+%.",
+	"(.+)'s (.+) was dodged%.",
+	"(.+)'s (.+) was dodged by .+%.",
+	"(.+)'s (.+) was evaded%.",
+	"(.+)'s (.+) was evaded by .+%.",
+	"(.+)'s (.+) fails%. .+ is immune%.",
+	"(.+)'s (.+) failed%. You are immune%.",
+	"(.+)'s (.+) missed .+%.",
+	"(.+)'s (.+) misses you%.",
+	"(.+)'s (.+) was resisted%.",
+	"(.+)'s (.+) was resisted by .+%.",	
+	"(.+)'s (.+) causes .+ %d+ damage%.",
+	"(.+) gains %d+ extra attacks? through (.+)%.",
+
+	"(.+) falls and loses %d+ health%.",
+	"(.+) hits .+ for %d+%.",
+	"(.+) crits .+ for %d+%.",
+	"(.+) suffers %d+ points of fire damage%.",
+	"(.+) loses %d+ health for swimming in lava%.",
+	"(.+) misses .+%.",
+	"(.+) attacks.+",
+	"(.+) interrupts your .+%.",
+	"(.+) interrupts .+'s .+%.",
+	"(.+) fails to dispel your .+%.",
+	"(.+) fails to dispel .+'s .+%.",
+	--"%s is killed by %s.",
+}
+
+enemybars_DEATH_PATTERNS = {
+	"(.+) dies%.",
+	"(.+) is slain by .+!",
+	"You have slain (.+)!",
+	"(.+) is destroyed%.",
+}
+
+enemybars_BUFF_PATTERNS = {
+	"(.+) gains %d+ .+ from (.+)'s (.+)%.",
+	"(.+) gains (.+) %(%d+%)%.",
+	"(.+) gains (.+)%.",
+
+	"(.+)'s (.+) heals (.+) for %d+%.",
+	"(.+)'s (.+) critically heals (.+) for %d+%.",
+	"(.+) gains %d+ extra attacks? through (.+)%.",
+	"(.+)'s (.+) failed%. You are immune%.",
+	"(.+)'s (.+) fails%. (.+) is immune%.",
+	"(.+)'s (.+) was resisted by (.+)%.",
+	"(.+)'s (.+) was resisted%.",
+	"(.+) begins to cast (.+)%.",
+	"(.+) casts (.+)%.",
+	"(.+) casts (.+) on (.+)%.",
+	"(.+) casts (.+) on (.+)'s .+%.",
+	"(.+) begins to perform (.+)%.",
+	"(.+) performs (.+)%.",
+	"(.+) performs (.+) on (.+)%.",
+	"(.+) fails to dispel (.+)'s .+%.",
+	"(.+)'s (.+) missed (.+)%.",
+	"(.+)'s (.+) drains %d+ .+ from .+%. .+ gains %d+ .+%.",
+}
+
+enemybars_SELFBUFFS = {
 	["Barkskin"] = 'DRUID',
 	["Enrage"] = 'DRUID',
 	["Prowl"] = 'DRUID',
@@ -77,7 +156,7 @@ enemybars_SelfBuffs = {
 	["Blink"] = 'MAGE',
 }
 
-enemybars_Abilities = {
+enemybars_ABILITIES = {
 	["Abolish Poison"] = 'DRUID',
 	["Bash"] = 'DRUID',
 	["Challenging Roar"] = 'DRUID',
