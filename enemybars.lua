@@ -143,7 +143,7 @@ function Event()
 			CaptureEvent(UnitName'target')
 		end
 	elseif event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS' or event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_MISSES' or event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE' then
-		for _, pattern in enemybars_PATTERNS do
+		for _, pattern in enemybars_HARM_PATTERNS do
 			for unitName, spell in string.gfind(arg1, pattern) do
 				CaptureEvent(unitName, spell)
 				return

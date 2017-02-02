@@ -1,4 +1,4 @@
-enemybars_PATTERNS = {
+enemybars_HARM_PATTERNS = {
 	"(.+)'s (.+) hits .+ for %d+%.",
 	"(.+)'s (.+) crits .+ for %d+%.",
 	"(.+)'s (.+) hits %s for %d+ .+ damage%.",
@@ -46,14 +46,7 @@ enemybars_PATTERNS = {
 	--"%s is killed by %s.",
 }
 
-enemybars_DEATH_PATTERNS = {
-	"(.+) dies%.",
-	"(.+) is slain by .+!",
-	"You have slain (.+)!",
-	"(.+) is destroyed%.",
-}
-
-enemybars_BUFF_PATTERNS = {
+enemybars_HELP_PATTERNS = {
 	"(.+) gains %d+ .+ from (.+)'s (.+)%.",
 	"(.+) gains (.+) %(%d+%)%.",
 	"(.+) gains (.+)%.",
@@ -75,6 +68,13 @@ enemybars_BUFF_PATTERNS = {
 	"(.+) fails to dispel (.+)'s .+%.",
 	"(.+)'s (.+) missed (.+)%.",
 	"(.+)'s (.+) drains %d+ .+ from .+%. .+ gains %d+ .+%.",
+}
+
+enemybars_DEATH_PATTERNS = {
+	"(.+) dies%.",
+	"(.+) is slain by .+!",
+	"You have slain (.+)!",
+	"(.+) is destroyed%.",
 }
 
 enemybars_SELFBUFFS = {
