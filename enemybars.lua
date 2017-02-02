@@ -153,8 +153,10 @@ function Event()
 	elseif event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_BUFF' or event == 'CHAT_MSG_SPELL_PERIODIC_HOSTILEPLAYER_BUFFS' then
 		for _, pattern in {SPLL_HEALCRIT, SPLL_HEAL, SPLL_CAST, SPLL_CASTS} do
 			for unitName, spell, targetName in string.gfind(arg1, pattern) do
-				CaptureEvent(unitName, spell)
-				CaptureEvent(targetName)
+				if strupper(targetName) ~= strupper(YOU) then
+					CaptureEvent(unitName, spell)
+					CaptureEvent(targetName)
+				end
 				return
 			end
 		end
@@ -290,14 +292,14 @@ ANCHOR:SetScript('OnUpdate', function()
 
 			if data.class == 'PET' then
 				frame.health:SetStatusBarColor(.77, .12, .23, .8)
-				frame.health:SetBackdropColor(.77 * .6, .12 * .6, .23 * .6, .6)		
+				frame.health:SetBackdropColor(.77 * .5, .12 * .5, .23 * .5, .8)		
 			elseif data.class then
 				local color = RAID_CLASS_COLORS[data.class]
 				frame.health:SetStatusBarColor(color.r, color.g, color.b, .8)
-				frame.health:SetBackdropColor(color.r * .6, color.g * .6, color.b * .6, .6)
+				frame.health:SetBackdropColor(color.r * .5, color.g * .5, color.b * .5, .8)
 			else	
 				frame.health:SetStatusBarColor(0, 0, 0, .8)
-				frame.health:SetBackdropColor(0, 0, 0, .5)
+				frame.health:SetBackdropColor(0, 0, 0, .8)
 			end	
 
 			if data.level then
