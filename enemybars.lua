@@ -276,11 +276,6 @@ ANCHOR:SetScript('OnUpdate', function()
 				UIFrameFlash(frame.flash, .2, .5, .7, nil, .1, 0)
 			end
 
-			-- if frame.scan == data.scanned then
-			-- 	return
-			-- end
-			frame.scan = data.scanned
-
 			frame.name:SetText(name)
 
 			if frame.portrait then
