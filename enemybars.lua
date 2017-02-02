@@ -291,15 +291,15 @@ ANCHOR:SetScript('OnUpdate', function()
 			end
 
 			if data.class == 'PET' then
-				frame.health:SetStatusBarColor(.77, .12, .23, .8)
-				frame.health:SetBackdropColor(.77 * .5, .12 * .5, .23 * .5, .8)		
+				frame.health:SetStatusBarColor(.77, .12, .23)
+				frame.health:SetBackdropColor(.77 * .5, .12 * .5, .23 * .5)		
 			elseif data.class then
 				local color = RAID_CLASS_COLORS[data.class]
-				frame.health:SetStatusBarColor(color.r, color.g, color.b, .8)
-				frame.health:SetBackdropColor(color.r * .5, color.g * .5, color.b * .5, .8)
+				frame.health:SetStatusBarColor(color.r, color.g, color.b)
+				frame.health:SetBackdropColor(color.r * .5, color.g * .5, color.b * .5)
 			else	
-				frame.health:SetStatusBarColor(0, 0, 0, .8)
-				frame.health:SetBackdropColor(0, 0, 0, .8)
+				frame.health:SetStatusBarColor(0, 0, 0)
+				frame.health:SetBackdropColor(0, 0, 0)
 			end	
 
 			if data.level then
