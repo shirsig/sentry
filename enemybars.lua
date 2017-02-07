@@ -136,10 +136,12 @@ function Event()
 		Setup()
 	elseif event == 'UPDATE_MOUSEOVER_UNIT' then
 		if UnitIsEnemy('player', 'mouseover') and UnitPlayerControlled'mouseover' and not UnitIsDead'mouseover' then
+			ScanUnit'mouseover'
 			CaptureEvent(UnitName'mouseover')
 		end
 	elseif event == 'PLAYER_TARGET_CHANGED' then
 		if UnitIsEnemy('player', 'target') and UnitPlayerControlled'target' and not UnitIsDead'target' then
+			ScanUnit'target'
 			CaptureEvent(UnitName'target')
 		end
 	elseif event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS' or event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_MISSES' or event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE' then
@@ -261,10 +263,12 @@ function OnClick()
 end
 
 ANCHOR:SetScript('OnUpdate', function()
+	ScanUnit'target'
+	ScanUnit'mouseover'
 	for _, frame in FRAMES do
 		local name = ENEMIES[frame:GetID()]
 		if name then
-			ScanEnemy(name)
+			TargetEnemy(name)
 			local data = DATA[name]
 
 			if data.failed and GetTime() > data.failed + 10 then
@@ -356,27 +360,16 @@ do
 			shooting = event == 'LOOT_OPENED'
 		end)
 	end
-	function ScanEnemy(name)
+	function TargetEnemy(name)
 		local data = DATA[name]
-		if name == UnitName'mouseover' then
-			ScanUnit'mouseover'
-			data.failed = nil
-			data.scanned = GetTime()
-		elseif name == UnitName'target' then
-			ScanUnit'target'
-			data.failed = nil
-			data.scanned = GetTime()
-		elseif (not data.scanned or GetTime() > data.scanned + 1) and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
-			local backup = UnitName'target'
+		if (not data.scanned or GetTime() > data.scanned + 1) and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+			local target = UnitName'target'
 			TargetByName(name, true)
-			if UnitName'target' == name then
-				ScanUnit'target'
-				data.failed = nil
-			else
+			if UnitName'target' ~= name then
 				data.failed = data.failed or GetTime()
 			end
-			if UnitName'target' ~= backup then
-				(backup and TargetLastTarget or ClearTarget)()
+			if UnitName'target' ~= target then
+				(target and TargetLastTarget or ClearTarget)()
 			end
 			data.scanned = GetTime()
 		end
@@ -386,15 +379,17 @@ end
 do
 	local f = CreateFrame'Frame'
 	function ScanUnit(id)
-		if UnitExists(id) then
-			if not DATA[UnitName(id)].portrait then
+		if UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
+			local data = DATA[UnitName(id)]
+			data.failed = nil
+			if not data.portrait then
 				local texture = f:CreateTexture(nil, 'ARTWORK')
 				texture:SetWidth(18)
 				texture:SetHeight(18)
 				texture:SetTexCoord(.15, .85, .15, .85)
 				DATA[UnitName(id)].portrait = texture
 			end
-			SetPortraitTexture(DATA[UnitName(id)].portrait, id)
+			SetPortraitTexture(data.portrait, id)
 			local rankName, rankNumber = GetPVPRankInfo(UnitPVPRank(id))
 			DATA[UnitName(id)].class = UnitIsPlayer(id) and strupper(UnitClass(id)) or 'PET'
 			DATA[UnitName(id)].level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
