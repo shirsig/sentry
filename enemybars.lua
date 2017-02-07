@@ -246,12 +246,6 @@ function CaptureEvent(unitName, spell)
 	end
 end
 
--- function CaptureHealer() -- TODO when healer is placed
--- 	if enemybars_settings.sound_all == 1 then
--- 		PlaySoundFile[[Sound\Interface\MapPing.wav]]
--- 	end
--- end
-
 function OnClick()
 	local name = ENEMIES[this:GetID()]
 	TargetByName(name, true)
