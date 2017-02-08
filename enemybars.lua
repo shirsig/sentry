@@ -23,7 +23,7 @@ ANCHOR:RegisterEvent'PLAYER_TARGET_CHANGED'
 
 local FRAMES = {}
 local ENEMIES = {}
-local DATA = setmetatable({}, {__index=function(self, key) self[key] = {}; return self[key] end})
+local DATA
 
 local SPLL_HEALCRIT = "(.+)%'s (.+) critically heals (.+) for (%d+)%a%."
 local SPLL_HEAL = "(.+)%'s (.+) heals (.+) for (%d+)%."
@@ -70,14 +70,18 @@ function Setup()
 		end)
 		f:SetWidth(160)
 		f:SetHeight(18)
-		f:RegisterForDrag'LeftButton'
 		f:SetID(i)
 		f:Hide()
-		f.rank = f:CreateTexture(nil, 'BACKGROUND')
+		f.rank = f:CreateTexture()
 		f.rank:SetWidth(15)
 		f.rank:SetHeight(15)
 		f.rank:SetPoint('RIGHT', f, 'LEFT', -4.5, 0)
-		local portrait = f:CreateTexture(nil, 'BACKGROUND')
+		f.skull = f:CreateTexture()
+		f.skull:SetWidth(16)
+		f.skull:SetHeight(16)
+		f.skull:SetPoint('LEFT', f, 'RIGHT', 2, 0)
+		f.skull:SetTexture[[Interface\TargetingFrame\UI-TargetingFrame-Skull]]
+		local portrait = f:CreateTexture()
 		portrait:SetWidth(18)
 		portrait:SetHeight(18)
 		portrait:SetPoint('LEFT', 0, 0)
@@ -118,6 +122,10 @@ function Setup()
 	SlashCmdList.ENEMYBARS = SlashCommand
 	
 	_G.enemybars_settings = enemybars_settings or {}
+	_G.enemybars_data = enemybars_data or {}
+	enemybars_data[GetRealmName()] = enemybars_data[GetRealmName()] or {}
+	DATA = enemybars_data[GetRealmName()]
+
 	if enemybars_settings.x then
 		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', enemybars_settings.x, enemybars_settings.y)
 	else
@@ -136,13 +144,13 @@ function Event()
 		Setup()
 	elseif event == 'UPDATE_MOUSEOVER_UNIT' then
 		if UnitIsEnemy('player', 'mouseover') and UnitPlayerControlled'mouseover' and not UnitIsDead'mouseover' then
-			ScanUnit'mouseover'
 			CaptureEvent(UnitName'mouseover')
+			ScanUnit'mouseover'
 		end
 	elseif event == 'PLAYER_TARGET_CHANGED' then
 		if UnitIsEnemy('player', 'target') and UnitPlayerControlled'target' and not UnitIsDead'target' then
-			ScanUnit'target'
 			CaptureEvent(UnitName'target')
+			ScanUnit'target'
 		end
 	elseif event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS' or event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_MISSES' or event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE' then
 		for _, pattern in enemybars_HARM_PATTERNS do
@@ -199,9 +207,7 @@ function PlaceFrames()
 end
 
 function SlashCommand(msg)
-	if msg == 'sound' then
-		enemybars_settings.sound = not enemybars_settings.sound
-	elseif msg == 'invert' then
+	if msg == 'invert' then
 		enemybars_settings.invert = not enemybars_settings.invert
 		PlaceFrames()
 	elseif strfind(msg, '^scale%s') then
@@ -214,45 +220,50 @@ function SlashCommand(msg)
 	end
 end
 
-function CaptureEvent(unitName, spell)
+function CaptureEvent(name, spell)
 	for i = 1, 3 do
 		if GetBattlefieldStatus(i) == 'active' then
 			return
 		end
 	end
-	if strupper(unitName) == strupper(YOU) or unitName == UnitName'pet' or unitName == UNKNOWNOBJECT then
+	if strupper(name) == strupper(YOU) or name == UnitName'pet' or name == UNKNOWNOBJECT then
 		return
 	end
 	for i = 1, GetNumPartyMembers() do
-		if unitName == UnitName('party' .. i) or unitName == UnitName('partypet' .. i) then
+		if name == UnitName('party' .. i) or name == UnitName('partypet' .. i) then
 			return
 		end
 	end
 
-	DATA[unitName].failed = nil
-	if not DATA[unitName].class then
-		DATA[unitName].class = spell and enemybars_ABILITIES[spell] or enemybars_SELFBUFFS[spell]
-		DATA[unitName].scanned = 0
+	DATA[name] = DATA[name] or {}
+	local data = DATA[name]
+	data.expiration = GetTime() + 30
+	if not data.class then
+		data.class = spell and enemybars_ABILITIES[spell] or enemybars_SELFBUFFS[spell]
 	end
 	
 	for _, enemy in ENEMIES do
-		if unitName == enemy then
+		if name == enemy then
 			return
 		end
 	end
 	if getn(ENEMIES) < SIZE then
 		PlaySoundFile(getn(ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
-		tinsert(ENEMIES, unitName)
+		tinsert(ENEMIES, name)
 	end
 end
 
 function OnClick()
 	local name = ENEMIES[this:GetID()]
-	TargetByName(name, true)
-	if UnitName'target' == name then
-		PlaySound'igCreatureAggroSelect'
-	else
-		PlaySoundFile[[Sound\Interface\Error.wav]]
+	if arg1 == 'LeftButton' then
+		TargetByName(name, true)
+		if UnitName'target' == name then
+			PlaySound'igCreatureAggroSelect'
+		else
+			PlaySoundFile[[Sound\Interface\Error.wav]]
+		end
+	elseif arg1 == 'RightButton' then
+		DATA[name].skull = not DATA[name].skull
 	end
 end
 
@@ -262,10 +273,13 @@ ANCHOR:SetScript('OnUpdate', function()
 	for _, frame in FRAMES do
 		local name = ENEMIES[frame:GetID()]
 		if name then
-			TargetEnemy(name)
 			local data = DATA[name]
 
-			if data.failed and GetTime() > data.failed + 10 then
+			if not data.portrait then
+				TargetEnemy(name)
+			end
+
+			if data.expiration < GetTime() then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
 				tremove(ENEMIES, frame:GetID())
 				return
@@ -318,6 +332,12 @@ ANCHOR:SetScript('OnUpdate', function()
 			else
 				frame.rank:Hide()
 			end
+
+			if data.skull then
+				frame.skull:Show()
+			else
+				frame.skull:Hide()
+			end
 			
 			frame.health:SetMinMaxValues(0, data.maxHealth or 100)
 			frame.health:SetValue(data.health or 100)
@@ -355,17 +375,12 @@ do
 		end)
 	end
 	function TargetEnemy(name)
-		local data = DATA[name]
-		if (not data.scanned or GetTime() > data.scanned + 1) and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+		if not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
 			local target = UnitName'target'
 			TargetByName(name, true)
-			if UnitName'target' ~= name then
-				data.failed = data.failed or GetTime()
-			end
 			if UnitName'target' ~= target then
 				(target and TargetLastTarget or ClearTarget)()
 			end
-			data.scanned = GetTime()
 		end
 	end
 end
@@ -375,21 +390,21 @@ do
 	function ScanUnit(id)
 		if UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
 			local data = DATA[UnitName(id)]
-			data.failed = nil
+			data.expiration = GetTime() + 30
 			if not data.portrait then
-				local texture = f:CreateTexture(nil, 'ARTWORK')
+				local texture = f:CreateTexture()
 				texture:SetWidth(18)
 				texture:SetHeight(18)
 				texture:SetTexCoord(.15, .85, .15, .85)
-				DATA[UnitName(id)].portrait = texture
+				data.portrait = texture
 			end
 			SetPortraitTexture(data.portrait, id)
 			local rankName, rankNumber = GetPVPRankInfo(UnitPVPRank(id))
-			DATA[UnitName(id)].class = UnitIsPlayer(id) and strupper(UnitClass(id)) or 'PET'
-			DATA[UnitName(id)].level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
-			DATA[UnitName(id)].rank = rankNumber
-			DATA[UnitName(id)].maxHealth = UnitHealthMax(id)
-			DATA[UnitName(id)].health = UnitHealth(id)
+			data.class = UnitIsPlayer(id) and strupper(UnitClass(id)) or 'PET'
+			data.level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
+			data.rank = rankNumber
+			data.maxHealth = UnitHealthMax(id)
+			data.health = UnitHealth(id)
 		end
 	end
 end

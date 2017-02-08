@@ -2,6 +2,6 @@
 ## Title: enemybars
 ## Notes: enemybars
 ## Author: shirsig
-## SavedVariables: enemybars_settings
+## SavedVariables: enemybars_settings, enemybars_data
 enemybars.lua
 data.lua
