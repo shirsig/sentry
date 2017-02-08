@@ -339,8 +339,8 @@ ANCHOR:SetScript('OnUpdate', function()
 				frame.skull:Hide()
 			end
 			
-			frame.health:SetMinMaxValues(0, data.maxHealth or 100)
-			frame.health:SetValue(data.health or 100)
+			frame.health:SetMinMaxValues(0, 1)
+			frame.health:SetValue(data.health or 1)
 		elseif frame:IsShown() then
 			UIFrameFlashRemoveFrame(frame)
 			frame:Hide()
@@ -388,8 +388,8 @@ end
 do
 	local f = CreateFrame'Frame'
 	function ScanUnit(id)
-		if UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
-			local data = DATA[UnitName(id)]
+		local data = DATA[UnitName(id)]
+		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
 			data.expiration = GetTime() + 30
 			if not data.portrait then
 				local texture = f:CreateTexture()
@@ -403,8 +403,7 @@ do
 			data.class = UnitIsPlayer(id) and strupper(UnitClass(id)) or 'PET'
 			data.level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
 			data.rank = rankNumber
-			data.maxHealth = UnitHealthMax(id)
-			data.health = UnitHealth(id)
+			data.health = UnitHealth(id) / UnitHealthMax(id)
 		end
 	end
 end
