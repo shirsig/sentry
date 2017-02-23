@@ -392,7 +392,7 @@ do
 		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
 			data.expiration = GetTime() + 30
 			if not data.portrait then
-				local texture = f:CreateTexture()
+				local texture = f:CreateTexture(nil, 'OVERLAY')
 				texture:SetWidth(18)
 				texture:SetHeight(18)
 				texture:SetTexCoord(.15, .85, .15, .85)
