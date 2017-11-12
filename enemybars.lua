@@ -238,7 +238,7 @@ function CaptureEvent(name, spell)
 		tinsert(ENEMIES, name)
 		for i = getn(RECENT), 1 do
 			if RECENT[i] == name then
-				tremove(recent, i)
+				tremove(RECENT, i)
 			end
 		end
 		if getn(ENEMIES) + getn(RECENT) > SIZE then
