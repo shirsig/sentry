@@ -77,11 +77,6 @@ function Setup()
 		f.rank:SetWidth(15)
 		f.rank:SetHeight(15)
 		f.rank:SetPoint('RIGHT', f, 'LEFT', -4.5, 0)
-		f.skull = f:CreateTexture()
-		f.skull:SetWidth(16)
-		f.skull:SetHeight(16)
-		f.skull:SetPoint('LEFT', f, 'RIGHT', 2, 0)
-		f.skull:SetTexture[[Interface\TargetingFrame\UI-TargetingFrame-Skull]]
 		local portrait = f:CreateTexture()
 		portrait:SetWidth(18)
 		portrait:SetHeight(18)
@@ -143,15 +138,11 @@ end
 function Event()
 	if event == 'PLAYER_LOGIN' then
 		Setup()
-	elseif event == 'UPDATE_MOUSEOVER_UNIT' then
-		if UnitIsEnemy('player', 'mouseover') and UnitPlayerControlled'mouseover' and not UnitIsDead'mouseover' then
-			CaptureEvent(UnitName'mouseover')
-			ScanUnit'mouseover'
-		end
-	elseif event == 'PLAYER_TARGET_CHANGED' then
-		if UnitIsEnemy('player', 'target') and UnitPlayerControlled'target' and not UnitIsDead'target' then
-			CaptureEvent(UnitName'target')
-			ScanUnit'target'
+	elseif event == 'UPDATE_MOUSEOVER_UNIT' or event == 'PLAYER_TARGET_CHANGED' then
+		local unit = event == 'UPDATE_MOUSEOVER_UNIT' and 'mouseover' or 'target'
+		if UnitIsEnemy('player', unit) and UnitPlayerControlled(unit) then
+			CaptureEvent(UnitName(unit))
+			ScanUnit(unit)
 		end
 	elseif event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS' or event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_MISSES' or event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE' then
 		for _, pattern in enemybars_HARM_PATTERNS do
@@ -263,8 +254,6 @@ function OnClick()
 		else
 			PlaySoundFile[[Sound\Interface\Error.wav]]
 		end
-	elseif arg1 == 'RightButton' then
-		DATA[name].skull = not DATA[name].skull
 	end
 end
 
@@ -333,12 +322,6 @@ ANCHOR:SetScript('OnUpdate', function()
 			else
 				frame.rank:Hide()
 			end
-
-			if data.skull then
-				frame.skull:Show()
-			else
-				frame.skull:Hide()
-			end
 			
 			frame.health:SetMinMaxValues(0, 1)
 			frame.health:SetValue(data.health or 1)
@@ -390,7 +373,7 @@ do
 	local f = CreateFrame'Frame'
 	function ScanUnit(id)
 		local data = DATA[UnitName(id)]
-		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) and not UnitIsDead(id) then
+		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) then
 			data.expiration = GetTime() + 30
 			if not data.portrait then
 				local texture = f:CreateTexture(nil, 'OVERLAY')
