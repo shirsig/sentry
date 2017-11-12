@@ -177,12 +177,6 @@ function Event()
 		for unitName, spell in string.gfind(arg1, SPLL_BCAST) do
 			CaptureEvent(unitName, spell)
 		end
-	elseif event == 'CHAT_MSG_COMBAT_HOSTILE_DEATH' then
-		for _, pattern in enemybars_DEATH_PATTERNS do
-			for unitName in string.gfind(arg1, pattern) do 
-				UnitDeath(unitName)
-			end
-		end
 	end
 end
 
@@ -260,6 +254,17 @@ end
 ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
+	-- do TODO scan for recent enemies by name
+	-- 	local active = {}
+	-- 	for _, name in ENEMIES do
+	-- 		active[name] = true
+	-- 	end
+	-- 	for name in DATA do
+	-- 		if not active[name] then
+	-- 			TargetEnemy(name)
+	-- 		end
+	-- 	end
+	-- end
 	for _, frame in FRAMES do
 		local name = ENEMIES[frame:GetID()]
 		if name then
@@ -388,16 +393,6 @@ do
 			data.level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
 			data.rank = rankNumber
 			data.health = UnitHealth(id) / UnitHealthMax(id)
-		end
-	end
-end
-
-function UnitDeath(name)
-	for i, enemy in ENEMIES do
-		if enemy == name then
-			PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
-			tremove(ENEMIES, i)
-			return
 		end
 	end
 end
