@@ -270,7 +270,7 @@ ANCHOR:SetScript('OnUpdate', function()
 		if name then
 			local data = DATA[name]
 
-			if not data.portrait then
+			if not data.portrait or data.expiration < GetTime() then
 				TargetEnemy(name)
 			end
 
