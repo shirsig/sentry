@@ -23,6 +23,7 @@ ANCHOR:RegisterEvent'PLAYER_TARGET_CHANGED'
 
 local FRAMES = {}
 local ENEMIES = {}
+local RECENT = {}
 local DATA
 
 local SPLL_HEALCRIT = "(.+)%'s (.+) critically heals (.+) for (%d+)%a%."
@@ -236,6 +237,14 @@ function CaptureEvent(name, spell)
 	if getn(ENEMIES) < SIZE then
 		PlaySoundFile(getn(ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
 		tinsert(ENEMIES, name)
+		for i = getn(RECENT), 1 do
+			if RECENT[i] == name then
+				tremove(recent, i)
+			end
+		end
+		if getn(ENEMIES) + getn(RECENT) > SIZE then
+			tremove(RECENT)
+		end
 	end
 end
 
@@ -254,17 +263,9 @@ end
 ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
-	-- do TODO scan for recent enemies by name
-	-- 	local active = {}
-	-- 	for _, name in ENEMIES do
-	-- 		active[name] = true
-	-- 	end
-	-- 	for name in DATA do
-	-- 		if not active[name] then
-	-- 			TargetEnemy(name)
-	-- 		end
-	-- 	end
-	-- end
+	for _, name in RECENT do
+		TargetEnemy(name)
+	end
 	for _, frame in FRAMES do
 		local name = ENEMIES[frame:GetID()]
 		if name then
@@ -277,6 +278,7 @@ ANCHOR:SetScript('OnUpdate', function()
 			if data.expiration < GetTime() then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
 				tremove(ENEMIES, frame:GetID())
+				tinsert(RECENT, 1, name)
 				return
 			end
 
