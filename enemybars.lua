@@ -132,7 +132,7 @@ function Setup()
 
 	PlaceFrames()
 
-	DEFAULT_CHAT_FRAME:AddMessage'enemybars Loaded (/enemybars for options)'
+	DEFAULT_CHAT_FRAME:AddMessage'<enemybars> loaded - /enemybars'
 end
 
 function Event()
@@ -196,14 +196,19 @@ function SlashCommand(msg)
 	if msg == 'invert' then
 		enemybars_settings.invert = not enemybars_settings.invert
 		PlaceFrames()
+		return
 	elseif strfind(msg, '^scale%s') then
 		for scale in string.gfind(msg, "scale%s*(%S*)") do
 			if tonumber(scale) then
 				SetEffectiveScale(ANCHOR, scale, UIParent)
-				enemybars_settings.scale = scale			
+				enemybars_settings.scale = scale
+				return
 			end
 		end
 	end
+	DEFAULT_CHAT_FRAME:AddMessage'<enemybars> Usage:'
+	DEFAULT_CHAT_FRAME:AddMessage'<enemybars>   invert'
+	DEFAULT_CHAT_FRAME:AddMessage'<enemybars>   scale {number}'
 end
 
 function CaptureEvent(name, spell)
