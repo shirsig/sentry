@@ -36,18 +36,6 @@ local SPLL_GAINS2 = "(.+) gains ([^%d].*)% %(%d+%)%."
 local SPLL_BPERFORM = "(.+) begins to perform (.+)%."
 local SPLL_BCAST = "(.+) begins to cast (.+)%."
 
-_G.TargetFrame_OnShow = function() end
-_G.TargetFrame_OnHide = CloseDropDownMenus
-do
-	local orig = UIErrorsFrame_OnEvent
-	function _G.UIErrorsFrame_OnEvent(event, msg)
-	    if msg == ERR_UNIT_NOT_FOUND then
-	        return
-	    end
-	    orig(event, msg)
-	end
-end
-
 function SetEffectiveScale(frame, scale, parentframe)
     local parent = getglobal(parentframe)
     if parent then
@@ -369,12 +357,19 @@ do
 			shooting = event == 'LOOT_OPENED'
 		end)
 	end
-	function TargetEnemy(name)
-		if not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
-			local target = UnitName'target'
-			TargetByName(name, true)
-			if UnitName'target' ~= target then
-				(target and TargetLastTarget or ClearTarget)()
+
+	do
+		local pass = function() end
+		function TargetEnemy(name)
+			if not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+				local target = UnitName'target'
+				local _PlaySound, _UIErrorsFrame_OnEvent = PlaySound, UIErrorsFrame_OnEvent
+				PlaySound, UIErrorsFrame_OnEvent = pass, pass
+				TargetByName(name, true)
+				if UnitName'target' ~= target then
+					(target and TargetLastTarget or ClearTarget)()
+				end
+				PlaySound, UIErrorsFrame_OnEvent = _PlaySound, _UIErrorsFrame_OnEvent
 			end
 		end
 	end
