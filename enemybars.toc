@@ -1,7 +1,7 @@
 ## Interface: 11200
-## Title: enemybars
-## Notes: enemybars
+## Title: sentry
+## Notes: sentry
 ## Author: shirsig
-## SavedVariables: enemybars_settings, enemybars_data
-enemybars.lua
+## SavedVariables: sentry_settings, sentry_data
+sentry.lua
 data.lua

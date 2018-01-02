@@ -54,7 +54,7 @@ function Setup()
 		end)
 		f:SetScript('OnDragStop', function()
 			ANCHOR:StopMovingOrSizing()
-			enemybars_settings.x, enemybars_settings.y = ANCHOR:GetCenter()
+			sentry_settings.x, sentry_settings.y = ANCHOR:GetCenter()
 		end)
 		f:SetScript('OnMouseUp', OnClick)
 		f:SetWidth(160)
@@ -75,7 +75,7 @@ function Setup()
 		f.health:EnableMouse(false)
 		f.health:SetPoint('TOPLEFT', portrait, 'TOPRIGHT', 0, 0)
 		f.health:SetPoint('BOTTOMRIGHT', 0, 0)
-		f.health:SetStatusBarTexture[[Interface\Addons\enemybars\Minimalist]]
+		f.health:SetStatusBarTexture[[Interface\Addons\sentry\Minimalist]]
 		f.health:SetBackdrop{bgFile=[[Interface\Tooltips\UI-Tooltip-Background]]}
 		f.name = f.health:CreateFontString()
 		f.name:SetWidth(154)
@@ -101,26 +101,23 @@ function Setup()
 		portrait:SetTexCoord(.17, .83, .17, .83)
 		tinsert(FRAMES, f)
 	end
-
-	_G.SLASH_ENEMYBARS1 = '/enemybars'
-	SlashCmdList.ENEMYBARS = SlashCommand
 	
-	_G.enemybars_settings = enemybars_settings or {}
-	_G.enemybars_data = enemybars_data or {}
-	enemybars_data[GetRealmName()] = enemybars_data[GetRealmName()] or {}
-	DATA = enemybars_data[GetRealmName()]
+	_G.sentry_settings = sentry_settings or {}
+	_G.sentry_data = sentry_data or {}
+	sentry_data[GetRealmName()] = sentry_data[GetRealmName()] or {}
+	DATA = sentry_data[GetRealmName()]
 
-	if enemybars_settings.x then
-		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', enemybars_settings.x, enemybars_settings.y)
+	if sentry_settings.x then
+		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', sentry_settings.x, sentry_settings.y)
 	else
 		ANCHOR:SetPoint('TOP', 0, -3)
 	end
-	enemybars_settings.scale = enemybars_settings.scale or 1
-	SetEffectiveScale(ANCHOR, enemybars_settings.scale, UIParent)
+	sentry_settings.scale = sentry_settings.scale or 1
+	SetEffectiveScale(ANCHOR, sentry_settings.scale, UIParent)
 
 	PlaceFrames()
 
-	DEFAULT_CHAT_FRAME:AddMessage'<enemybars> loaded - /enemybars'
+	DEFAULT_CHAT_FRAME:AddMessage'<sentry> loaded - /sentry'
 end
 
 function Event()
@@ -133,7 +130,7 @@ function Event()
 			ScanUnit(unit)
 		end
 	elseif event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_HITS' or event == 'CHAT_MSG_COMBAT_HOSTILEPLAYER_MISSES' or event == 'CHAT_MSG_SPELL_HOSTILEPLAYER_DAMAGE' then
-		for _, pattern in enemybars_HARM_PATTERNS do
+		for _, pattern in sentry_HARM_PATTERNS do
 			for unitName, spell in string.gfind(arg1, pattern) do
 				CaptureEvent(unitName, spell)
 				return
@@ -154,10 +151,10 @@ function Event()
 			CaptureEvent(unitName, spell)
 		end
 		for unitName, spell in string.gfind(arg1, SPLL_GAINS) do
-			CaptureEvent(unitName, enemybars_SELFBUFFS[spell] and spell)
+			CaptureEvent(unitName, sentry_SELFBUFFS[spell] and spell)
 		end
 		for unitName in string.gfind(arg1, SPLL_GAINS2) do
-			CaptureEvent(unitName, enemybars_SELFBUFFS[spell] and spell)
+			CaptureEvent(unitName, sentry_SELFBUFFS[spell] and spell)
 		end
 		for unitName, spell in string.gfind(arg1, SPLL_BPERFORM) do
 			CaptureEvent(unitName, spell)
@@ -173,30 +170,11 @@ function PlaceFrames()
 		local i = frame:GetID()
 		frame:ClearAllPoints()
 		if i == 1 then
-			frame:SetPoint(enemybars_settings.invert and 'BOTTOM' or 'TOP', 0, 0)
+			frame:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', 0, 0)
 		else
-			frame:SetPoint(enemybars_settings.invert and 'BOTTOM' or 'TOP', FRAMES[i - 1], enemybars_settings.invert and 'TOP' or 'BOTTOM', 0, 0)
+			frame:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', FRAMES[i - 1], sentry_settings.invert and 'TOP' or 'BOTTOM', 0, 0)
 		end
 	end
-end
-
-function SlashCommand(msg)
-	if msg == 'invert' then
-		enemybars_settings.invert = not enemybars_settings.invert
-		PlaceFrames()
-		return
-	elseif strfind(msg, '^scale%s') then
-		for scale in string.gfind(msg, "scale%s*(%S*)") do
-			if tonumber(scale) then
-				SetEffectiveScale(ANCHOR, scale, UIParent)
-				enemybars_settings.scale = scale
-				return
-			end
-		end
-	end
-	DEFAULT_CHAT_FRAME:AddMessage'<enemybars> Usage:'
-	DEFAULT_CHAT_FRAME:AddMessage'<enemybars>   invert'
-	DEFAULT_CHAT_FRAME:AddMessage'<enemybars>   scale {number}'
 end
 
 function CaptureEvent(name, spell)
@@ -218,7 +196,7 @@ function CaptureEvent(name, spell)
 	local data = DATA[name]
 	data.expiration = GetTime() + 30
 	if not data.class then
-		data.class = spell and enemybars_ABILITIES[spell] or enemybars_SELFBUFFS[spell]
+		data.class = spell and sentry_ABILITIES[spell] or sentry_SELFBUFFS[spell]
 	end
 	
 	for _, enemy in ENEMIES do
@@ -395,5 +373,55 @@ do
 			data.rank = rankNumber
 			data.health = UnitHealth(id) / UnitHealthMax(id)
 		end
+	end
+end
+
+_G.SLASH_SENTRY1 = '/sentry'
+do
+	local function sorted_targets()
+		local sorted_targets = {}
+		for key, _ in pairs(unitscan_targets) do
+			tinsert(sorted_targets, key)
+		end
+		sort(sorted_targets, function(key1, key2) return key1 < key2 end)
+		return sorted_targets
+	end
+
+	local function toggle_target(name)
+		local key = strupper(name)
+		if unitscan_targets[key] then
+			unitscan_targets[key] = nil
+			DEFAULT_CHAT_FRAME:AddMessage('- ' .. key)
+		elseif key ~= '' then
+			unitscan_targets[key] = true
+			DEFAULT_CHAT_FRAME:AddMessage('+ ' .. key)
+		end
+	end
+
+	function SlashCmdList.SENTRY(msg)
+		if msg == 'invert' then
+			sentry_settings.invert = not sentry_settings.invert
+			PlaceFrames()
+			return
+		elseif strfind(msg, '^scale%s') then
+			for scale in string.gfind(msg, "scale%s*(%S*)") do
+				if tonumber(scale) then
+					SetEffectiveScale(ANCHOR, scale, UIParent)
+					sentry_settings.scale = scale
+					return
+				end
+			end
+		elseif strfind(msg, '^toggle%s') then
+			for name in string.gfind(msg, "scale%s*(%S*)") do
+				toggle_target(name)
+			end
+		elseif msg == 'list' then
+			for _, key in ipairs(unitscan.sorted_targets()) do
+				DEFAULT_CHAT_FRAME:AddMessage(key)
+			end	
+		end
+		DEFAULT_CHAT_FRAME:AddMessage'<sentry> Usage:'
+		DEFAULT_CHAT_FRAME:AddMessage'<sentry>   invert'
+		DEFAULT_CHAT_FRAME:AddMessage'<sentry>   scale {number}'
 	end
 end

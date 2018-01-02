@@ -1,4 +1,4 @@
-enemybars_HARM_PATTERNS = {
+sentry_HARM_PATTERNS = {
 	"(.+)'s (.+) hits .+ for %d+%.",
 	"(.+)'s (.+) crits .+ for %d+%.",
 	"(.+)'s (.+) hits %s for %d+ .+ damage%.",
@@ -46,7 +46,7 @@ enemybars_HARM_PATTERNS = {
 	--"%s is killed by %s.",
 }
 
-enemybars_HELP_PATTERNS = {
+sentry_HELP_PATTERNS = {
 	"(.+) gains %d+ .+ from (.+)'s (.+)%.",
 	"(.+) gains (.+) %(%d+%)%.",
 	"(.+) gains (.+)%.",
@@ -70,14 +70,14 @@ enemybars_HELP_PATTERNS = {
 	"(.+)'s (.+) drains %d+ .+ from .+%. .+ gains %d+ .+%.",
 }
 
-enemybars_DEATH_PATTERNS = {
+sentry_DEATH_PATTERNS = {
 	"(.+) dies%.",
 	"(.+) is slain by .+!",
 	"You have slain (.+)!",
 	"(.+) is destroyed%.",
 }
 
-enemybars_SELFBUFFS = {
+sentry_SELFBUFFS = {
 	["Barkskin"] = 'DRUID',
 	["Enrage"] = 'DRUID',
 	["Prowl"] = 'DRUID',
@@ -156,7 +156,7 @@ enemybars_SELFBUFFS = {
 	["Blink"] = 'MAGE',
 }
 
-enemybars_ABILITIES = {
+sentry_ABILITIES = {
 	["Abolish Poison"] = 'DRUID',
 	["Bash"] = 'DRUID',
 	["Challenging Roar"] = 'DRUID',
