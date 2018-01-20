@@ -241,7 +241,7 @@ ANCHOR:SetScript('OnUpdate', function()
 		for _, active_name in ACTIVE_ENEMIES do
 			active = active or name == active_name
 		end
-		if not active_name then
+		if not active then
 			TargetEnemy(name)
 		end
 	end
