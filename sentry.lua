@@ -348,12 +348,12 @@ do
 			if not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
 				local target = UnitName'target'
 				local _PlaySound, _UIErrorsFrame_OnEvent = PlaySound, UIErrorsFrame_OnEvent
-				PlaySound, UIErrorsFrame_OnEvent = pass, pass
+				_G.PlaySound, _G.UIErrorsFrame_OnEvent = pass, pass
 				TargetByName(name, true)
 				if UnitName'target' ~= target then
 					(target and TargetLastTarget or ClearTarget)()
 				end
-				PlaySound, UIErrorsFrame_OnEvent = _PlaySound, _UIErrorsFrame_OnEvent
+				_G.PlaySound, _G.UIErrorsFrame_OnEvent = _PlaySound, _UIErrorsFrame_OnEvent
 			end
 		end
 	end
