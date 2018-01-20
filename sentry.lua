@@ -23,7 +23,7 @@ ANCHOR:RegisterEvent'PLAYER_TARGET_CHANGED'
 local FRAMES = {}
 local ACTIVE_ENEMIES = {}
 local RECENT_ENEMIES = {}
-local DATA
+local DATA = {}
 
 local SPLL_HEALCRIT = "(.+)%'s (.+) critically heals (.+) for (%d+)%a%."
 local SPLL_HEAL = "(.+)%'s (.+) heals (.+) for (%d+)%."
@@ -103,10 +103,6 @@ function Setup()
 		portrait:SetTexCoord(.17, .83, .17, .83)
 		tinsert(FRAMES, f)
 	end
-	
-	_G.sentry_data = sentry_data or {}
-	sentry_data[GetRealmName()] = sentry_data[GetRealmName()] or {}
-	DATA = sentry_data[GetRealmName()]
 
 	_G.sentry_settings = sentry_settings or {}
 	if sentry_settings.x then

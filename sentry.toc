@@ -2,6 +2,6 @@
 ## Title: sentry
 ## Notes: sentry
 ## Author: shirsig
-## SavedVariables: sentry_settings, sentry_data
+## SavedVariables: sentry_settings
 sentry.lua
 data.lua
