@@ -48,15 +48,17 @@ function Setup()
 	for i = 1, SIZE do
 		local f = CreateFrame('Frame', nil, ANCHOR)
 		f:EnableMouse(true)
-		f:RegisterForDrag'LeftButton'
-		f:SetScript('OnDragStart', function()
-			ANCHOR:StartMoving()
+		f:SetScript('OnMouseDown', function()
+			if IsControlKeyDown() then
+				ANCHOR:StartMoving()
+			else
+				OnClick()
+			end
 		end)
-		f:SetScript('OnDragStop', function()
+		f:SetScript('OnMouseUp', function()
 			ANCHOR:StopMovingOrSizing()
 			sentry_settings.x, sentry_settings.y = ANCHOR:GetCenter()
 		end)
-		f:SetScript('OnMouseUp', OnClick)
 		f:SetWidth(160)
 		f:SetHeight(18)
 		f:SetID(i)
@@ -126,7 +128,7 @@ function Event()
 		Setup()
 	elseif event == 'UPDATE_MOUSEOVER_UNIT' or event == 'PLAYER_TARGET_CHANGED' then
 		local unit = event == 'UPDATE_MOUSEOVER_UNIT' and 'mouseover' or 'target'
-		if UnitIsEnemy('player', unit) and UnitPlayerControlled(unit) then
+		if UnitPlayerControlled(unit) then
 			CaptureEvent(UnitName(unit))
 			ScanUnit(unit)
 		end
@@ -239,7 +241,13 @@ ANCHOR:SetScript('OnUpdate', function()
 	end
 	for _, name in RECENT_ENEMIES do
 		if not sentry_settings.enemies[name] then
-			TargetEnemy(name)
+			local active = false
+			for _, active_name in ACTIVE_ENEMIES do
+				active = active or name == active_name
+			end
+			if not active_name then
+				TargetEnemy(name)
+			end
 		end
 	end
 	for _, frame in FRAMES do
