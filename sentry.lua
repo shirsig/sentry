@@ -128,7 +128,7 @@ function Event()
 		Setup()
 	elseif event == 'UPDATE_MOUSEOVER_UNIT' or event == 'PLAYER_TARGET_CHANGED' then
 		local unit = event == 'UPDATE_MOUSEOVER_UNIT' and 'mouseover' or 'target'
-		if UnitPlayerControlled(unit) then
+		if UnitIsEnemy('player', unit) and UnitPlayerControlled(unit) then
 			CaptureEvent(UnitName(unit))
 			ScanUnit(unit)
 		end
@@ -246,7 +246,6 @@ ANCHOR:SetScript('OnUpdate', function()
 				active = active or name == active_name
 			end
 			if not active_name then
-				TargetEnemy(name)
 			end
 		end
 	end
