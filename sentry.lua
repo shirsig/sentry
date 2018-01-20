@@ -237,16 +237,17 @@ ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
 	for name, _ in sentry_settings.enemies do
-		TargetEnemy(name)
+		local active = false
+		for _, active_name in ACTIVE_ENEMIES do
+			active = active or name == active_name
+		end
+		if not active_name then
+			TargetEnemy(name)
+		end
 	end
 	for _, name in RECENT_ENEMIES do
 		if not sentry_settings.enemies[name] then
-			local active = false
-			for _, active_name in ACTIVE_ENEMIES do
-				active = active or name == active_name
-			end
-			if not active_name then
-			end
+			TargetEnemy(name)
 		end
 	end
 	for _, frame in FRAMES do
