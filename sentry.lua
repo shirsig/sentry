@@ -21,8 +21,8 @@ ANCHOR:RegisterEvent'UPDATE_MOUSEOVER_UNIT'
 ANCHOR:RegisterEvent'PLAYER_TARGET_CHANGED'
 
 local FRAMES = {}
-local ENEMIES = {}
-local RECENT = {}
+local ACTIVE_ENEMIES = {}
+local RECENT_ENEMIES = {}
 local DATA
 
 local SPLL_HEALCRIT = "(.+)%'s (.+) critically heals (.+) for (%d+)%a%."
@@ -102,11 +102,11 @@ function Setup()
 		tinsert(FRAMES, f)
 	end
 	
-	_G.sentry_settings = sentry_settings or {}
 	_G.sentry_data = sentry_data or {}
 	sentry_data[GetRealmName()] = sentry_data[GetRealmName()] or {}
 	DATA = sentry_data[GetRealmName()]
 
+	_G.sentry_settings = sentry_settings or {}
 	if sentry_settings.x then
 		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', sentry_settings.x, sentry_settings.y)
 	else
@@ -114,6 +114,7 @@ function Setup()
 	end
 	sentry_settings.scale = sentry_settings.scale or 1
 	SetEffectiveScale(ANCHOR, sentry_settings.scale, UIParent)
+	sentry_settings.enemies = sentry_settings.enemies or {}
 
 	PlaceFrames()
 
@@ -199,27 +200,27 @@ function CaptureEvent(name, spell)
 		data.class = spell and sentry_ABILITIES[spell] or sentry_SELFBUFFS[spell]
 	end
 	
-	for _, enemy in ENEMIES do
+	for _, enemy in ACTIVE_ENEMIES do
 		if name == enemy then
 			return
 		end
 	end
-	if getn(ENEMIES) < SIZE then
-		PlaySoundFile(getn(ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
-		tinsert(ENEMIES, name)
-		for i = getn(RECENT), 1 do
-			if RECENT[i] == name then
-				tremove(RECENT, i)
+	if getn(ACTIVE_ENEMIES) < SIZE then
+		PlaySoundFile(getn(ACTIVE_ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
+		tinsert(ACTIVE_ENEMIES, name)
+		for i = getn(RECENT_ENEMIES), 1 do
+			if RECENT_ENEMIES[i] == name then
+				tremove(RECENT_ENEMIES, i)
 			end
 		end
-		if getn(ENEMIES) + getn(RECENT) > SIZE then
-			tremove(RECENT)
+		if getn(ACTIVE_ENEMIES) + getn(RECENT_ENEMIES) > SIZE then
+			tremove(RECENT_ENEMIES)
 		end
 	end
 end
 
 function OnClick()
-	local name = ENEMIES[this:GetID()]
+	local name = ACTIVE_ENEMIES[this:GetID()]
 	if arg1 == 'LeftButton' then
 		TargetByName(name, true)
 		if UnitName'target' == name then
@@ -233,11 +234,16 @@ end
 ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
-	for _, name in RECENT do
+	for name, _ in sentry_settings.enemies do
 		TargetEnemy(name)
 	end
+	for _, name in RECENT_ENEMIES do
+		if not sentry_settings.enemies[name] then
+			TargetEnemy(name)
+		end
+	end
 	for _, frame in FRAMES do
-		local name = ENEMIES[frame:GetID()]
+		local name = ACTIVE_ENEMIES[frame:GetID()]
 		if name then
 			local data = DATA[name]
 
@@ -247,8 +253,8 @@ ANCHOR:SetScript('OnUpdate', function()
 
 			if data.expiration < GetTime() then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
-				tremove(ENEMIES, frame:GetID())
-				tinsert(RECENT, 1, name)
+				tremove(ACTIVE_ENEMIES, frame:GetID())
+				tinsert(RECENT_ENEMIES, 1, name)
 				return
 			end
 
@@ -378,23 +384,23 @@ end
 
 _G.SLASH_SENTRY1 = '/sentry'
 do
-	local function sorted_targets()
-		local sorted_targets = {}
-		for key, _ in pairs(unitscan_targets) do
-			tinsert(sorted_targets, key)
+	local function sortedNames()
+		local t = {}
+		for key in pairs(sentry_settings.enemies) do
+			tinsert(t, key)
 		end
-		sort(sorted_targets, function(key1, key2) return key1 < key2 end)
-		return sorted_targets
+		sort(t, function(key1, key2) return key1 < key2 end)
+		return t
 	end
 
-	local function toggle_target(name)
-		local key = strupper(name)
-		if unitscan_targets[key] then
-			unitscan_targets[key] = nil
-			DEFAULT_CHAT_FRAME:AddMessage('- ' .. key)
+	local function toggleName(name)
+		local key = gsub(strlower(name), "^%l", string.upper)
+		if sentry_settings.enemies[key] then
+			sentry_settings.enemies[key] = nil
+			DEFAULT_CHAT_FRAME:AddMessage('<sentry> - ' .. key)
 		elseif key ~= '' then
-			unitscan_targets[key] = true
-			DEFAULT_CHAT_FRAME:AddMessage('+ ' .. key)
+			sentry_settings.enemies[key] = true
+			DEFAULT_CHAT_FRAME:AddMessage('<sentry> + ' .. key)
 		end
 	end
 
@@ -412,16 +418,19 @@ do
 				end
 			end
 		elseif strfind(msg, '^toggle%s') then
-			for name in string.gfind(msg, "scale%s*(%S*)") do
-				toggle_target(name)
+			for name in string.gfind(msg, "toggle%s*(%S*)") do
+				toggleName(name)
 			end
 		elseif msg == 'list' then
-			for _, key in ipairs(unitscan.sorted_targets()) do
-				DEFAULT_CHAT_FRAME:AddMessage(key)
+			for _, key in ipairs(sortedNames()) do
+				DEFAULT_CHAT_FRAME:AddMessage('<sentry> ' .. key)
 			end	
+		else
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry> Usage:'
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   invert'
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   scale {number}'
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   toggle {name}'
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   list'
 		end
-		DEFAULT_CHAT_FRAME:AddMessage'<sentry> Usage:'
-		DEFAULT_CHAT_FRAME:AddMessage'<sentry>   invert'
-		DEFAULT_CHAT_FRAME:AddMessage'<sentry>   scale {number}'
 	end
 end
