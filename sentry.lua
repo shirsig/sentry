@@ -237,6 +237,9 @@ ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
 	for name, _ in sentry_settings.enemies do
+		if getn(ACTIVE_ENEMIES) == SIZE then
+			break
+		end
 		local active = false
 		for _, active_name in ACTIVE_ENEMIES do
 			active = active or name == active_name
