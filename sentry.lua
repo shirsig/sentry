@@ -196,7 +196,7 @@ function CaptureEvent(name, spell)
 
 	DATA[name] = DATA[name] or {}
 	local data = DATA[name]
-	data.expiration = GetTime() + 30
+	data.seen = GetTime()
 	if not data.class then
 		data.class = spell and sentry_ABILITIES[spell] or sentry_SELFBUFFS[spell]
 	end
@@ -259,7 +259,7 @@ ANCHOR:SetScript('OnUpdate', function()
 
 			TargetEnemy(name)
 
-			if data.untargetable and GetTime() > data.expiration then
+			if data.untargetable and GetTime() > data.seen + 30 then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
 				tremove(ACTIVE_ENEMIES, frame:GetID())
 				tinsert(RECENT_ENEMIES, 1, name)
@@ -383,6 +383,7 @@ do
 		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) then
 			data.untargetable = false
 			data.scanned = GetTime()
+			data.seen = data.scanned
 			if not data.portrait then
 				local texture = f:CreateTexture(nil, 'OVERLAY')
 				texture:SetWidth(18)
