@@ -118,6 +118,13 @@ function CreateBars()
 		portrait:SetTexCoord(.17, .83, .17, .83)
 		tinsert(FRAMES, f)
 	end
+	for i = 1, getn(FRAMES) do
+		if i > sentry_settings.size then
+			FRAMES[i]:Hide()
+		else
+			FRAMES[i]:Show()
+		end
+	end
 
 	PlaceBars()
 end
@@ -168,13 +175,12 @@ function Event()
 end
 
 function PlaceBars()
-	for _, frame in FRAMES do
-		local i = frame:GetID()
-		frame:ClearAllPoints()
+	for i = 1, sentry_settings.size do
+		FRAMES[i]:ClearAllPoints()
 		if i == 1 then
-			frame:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', 0, 0)
+			FRAMES[i]:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', 0, 0)
 		else
-			frame:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', FRAMES[i - 1], sentry_settings.invert and 'TOP' or 'BOTTOM', 0, 0)
+			FRAMES[i]:SetPoint(sentry_settings.invert and 'BOTTOM' or 'TOP', FRAMES[i - 1], sentry_settings.invert and 'TOP' or 'BOTTOM', 0, 0)
 		end
 	end
 end
@@ -249,7 +255,8 @@ ANCHOR:SetScript('OnUpdate', function()
 			TargetEnemy(name)
 		end
 	end
-	for _, frame in FRAMES do
+	for i = 1, sentry_settings.size do
+		local frame = FRAMES[i]
 		local name = ACTIVE_ENEMIES[frame:GetID()]
 		if name then
 			local data = DATA[name]
