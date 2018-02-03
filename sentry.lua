@@ -209,11 +209,7 @@ function CaptureEvent(name, spell)
 	if getn(ACTIVE_ENEMIES) < sentry_settings.size then
 		PlaySoundFile(getn(ACTIVE_ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
 		tinsert(ACTIVE_ENEMIES, name)
-		for i = getn(RECENT_ENEMIES), 1, -1 do
-			if RECENT_ENEMIES[i] == name then
-				tremove(RECENT_ENEMIES, i)
-			end
-		end
+		RECENT_ENEMIES[name] = nil
 	end
 end
 
@@ -244,11 +240,12 @@ ANCHOR:SetScript('OnUpdate', function()
 			TargetEnemy(name)
 		end
 	end
-	for _, name in RECENT_ENEMIES do
-		if getn(ACTIVE_ENEMIES) == sentry_settings.size then
-			break
+	local now = GetTime()
+	for name, time in RECENT_ENEMIES do
+		if now - time > 180 then
+			RECENT_ENEMIES[name] = nil
 		end
-		if not sentry_settings.enemies[name] then
+		if getn(ACTIVE_ENEMIES) < sentry_settings.size and not sentry_settings.enemies[name] then
 			TargetEnemy(name)
 		end
 	end
@@ -259,13 +256,10 @@ ANCHOR:SetScript('OnUpdate', function()
 
 			TargetEnemy(name)
 
-			if data.untargetable and GetTime() > data.seen + 30 then
+			if data.untargetable and now > data.seen + 30 then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
 				tremove(ACTIVE_ENEMIES, frame:GetID())
-				tinsert(RECENT_ENEMIES, 1, name)
-				if getn(RECENT_ENEMIES) > sentry_settings.size then
-					tremove(RECENT_ENEMIES)
-				end
+				RECENT_ENEMIES[name] = now
 				return
 			end
 
