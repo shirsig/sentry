@@ -1,11 +1,8 @@
 local _G, _M = getfenv(0), {}
 setfenv(1, setmetatable(_M, {__index=_G}))
 
-local SIZE = 7
-
 local ANCHOR = CreateFrame('Frame', nil, UIParent)
 ANCHOR:SetWidth(160)
-ANCHOR:SetHeight(18 * SIZE)
 ANCHOR:SetMovable(true)
 ANCHOR:SetClampedToScreen(true)
 
@@ -45,7 +42,25 @@ function SetEffectiveScale(frame, scale, parentframe)
 end
 
 function Setup()
-	for i = 1, SIZE do
+	_G.sentry_settings = sentry_settings or {}
+	if sentry_settings.x then
+		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', sentry_settings.x, sentry_settings.y)
+	else
+		ANCHOR:SetPoint('TOP', 0, -3)
+	end
+	sentry_settings.scale = sentry_settings.scale or 1
+	SetEffectiveScale(ANCHOR, sentry_settings.scale, UIParent)
+	sentry_settings.size = sentry_settings.size or 7
+	sentry_settings.enemies = sentry_settings.enemies or {}
+
+	CreateBars()
+
+	DEFAULT_CHAT_FRAME:AddMessage'<sentry> loaded - /sentry'
+end
+
+function CreateBars()
+	ANCHOR:SetHeight(18 * sentry_settings.size)
+	for i = getn(FRAMES) + 1, sentry_settings.size do
 		local f = CreateFrame('Frame', nil, ANCHOR)
 		f:EnableMouse(true)
 		f:SetScript('OnMouseDown', function()
@@ -104,19 +119,7 @@ function Setup()
 		tinsert(FRAMES, f)
 	end
 
-	_G.sentry_settings = sentry_settings or {}
-	if sentry_settings.x then
-		ANCHOR:SetPoint('CENTER', 'UIParent', 'BOTTOMLEFT', sentry_settings.x, sentry_settings.y)
-	else
-		ANCHOR:SetPoint('TOP', 0, -3)
-	end
-	sentry_settings.scale = sentry_settings.scale or 1
-	SetEffectiveScale(ANCHOR, sentry_settings.scale, UIParent)
-	sentry_settings.enemies = sentry_settings.enemies or {}
-
-	PlaceFrames()
-
-	DEFAULT_CHAT_FRAME:AddMessage'<sentry> loaded - /sentry'
+	PlaceBars()
 end
 
 function Event()
@@ -164,7 +167,7 @@ function Event()
 	end
 end
 
-function PlaceFrames()
+function PlaceBars()
 	for _, frame in FRAMES do
 		local i = frame:GetID()
 		frame:ClearAllPoints()
@@ -203,7 +206,7 @@ function CaptureEvent(name, spell)
 			return
 		end
 	end
-	if getn(ACTIVE_ENEMIES) < SIZE then
+	if getn(ACTIVE_ENEMIES) < sentry_settings.size then
 		PlaySoundFile(getn(ACTIVE_ENEMIES) == 0 and [[Sound\Interface\TalentScreenOpen.wav]] or [[Sound\Interface\MouseOverTarget.wav]])
 		tinsert(ACTIVE_ENEMIES, name)
 		for i = getn(RECENT_ENEMIES), 1, -1 do
@@ -230,7 +233,7 @@ ANCHOR:SetScript('OnUpdate', function()
 	ScanUnit'target'
 	ScanUnit'mouseover'
 	for name, _ in sentry_settings.enemies do
-		if getn(ACTIVE_ENEMIES) == SIZE then
+		if getn(ACTIVE_ENEMIES) == sentry_settings.size then
 			break
 		end
 		local active = false
@@ -242,7 +245,7 @@ ANCHOR:SetScript('OnUpdate', function()
 		end
 	end
 	for _, name in RECENT_ENEMIES do
-		if getn(ACTIVE_ENEMIES) == SIZE then
+		if getn(ACTIVE_ENEMIES) == sentry_settings.size then
 			break
 		end
 		if not sentry_settings.enemies[name] then
@@ -254,15 +257,13 @@ ANCHOR:SetScript('OnUpdate', function()
 		if name then
 			local data = DATA[name]
 
-			if not data.portrait or data.expiration < GetTime() then
-				TargetEnemy(name)
-			end
+			TargetEnemy(name)
 
-			if data.expiration < GetTime() then
+			if data.untargetable and GetTime() > data.expiration then
 				PlaySound'INTERFACESOUND_LOSTTARGETUNIT'
 				tremove(ACTIVE_ENEMIES, frame:GetID())
 				tinsert(RECENT_ENEMIES, 1, name)
-				if getn(RECENT_ENEMIES) > SIZE then
+				if getn(RECENT_ENEMIES) > sentry_settings.size then
 					tremove(RECENT_ENEMIES)
 				end
 				return
@@ -353,15 +354,21 @@ do
 	end
 
 	do
+		local lastTargetTime = 0
 		local pass = function() end
 		function TargetEnemy(name)
-			if not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+			local now = GetTime()
+			local ready = now - lastTargetTime > 3 and now - (DATA[name] and DATA[name].scanned or 0) > getn(ACTIVE_ENEMIES) * 3
+			if ready and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
 				local target = UnitName'target'
 				local _PlaySound, _UIErrorsFrame_OnEvent = PlaySound, UIErrorsFrame_OnEvent
 				_G.PlaySound, _G.UIErrorsFrame_OnEvent = pass, pass
 				TargetByName(name, true)
 				if UnitName'target' ~= target then
 					(target and TargetLastTarget or ClearTarget)()
+					lastTargetTime = now
+				elseif DATA[name] then
+					DATA[name].untargetable = true
 				end
 				_G.PlaySound, _G.UIErrorsFrame_OnEvent = _PlaySound, _UIErrorsFrame_OnEvent
 			end
@@ -374,7 +381,8 @@ do
 	function ScanUnit(id)
 		local data = DATA[UnitName(id)]
 		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) then
-			data.expiration = GetTime() + 30
+			data.untargetable = false
+			data.scanned = GetTime()
 			if not data.portrait then
 				local texture = f:CreateTexture(nil, 'OVERLAY')
 				texture:SetWidth(18)
@@ -417,13 +425,21 @@ do
 	function SlashCmdList.SENTRY(msg)
 		if msg == 'invert' then
 			sentry_settings.invert = not sentry_settings.invert
-			PlaceFrames()
+			PlaceBars()
 			return
 		elseif strfind(msg, '^scale%s') then
 			for scale in string.gfind(msg, "scale%s*(%S*)") do
 				if tonumber(scale) then
 					SetEffectiveScale(ANCHOR, scale, UIParent)
-					sentry_settings.scale = scale
+					sentry_settings.scale = tonumber(scale)
+					return
+				end
+			end
+		elseif strfind(msg, '^size%s') then
+			for size in string.gfind(msg, "size%s*(%S*)") do
+				if tonumber(size) then
+					sentry_settings.size = tonumber(size)
+					CreateBars()
 					return
 				end
 			end
@@ -439,6 +455,7 @@ do
 			DEFAULT_CHAT_FRAME:AddMessage'<sentry> Usage:'
 			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   invert'
 			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   scale {number}'
+			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   size {number}'
 			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   toggle {name}'
 			DEFAULT_CHAT_FRAME:AddMessage'<sentry>   list'
 		end
