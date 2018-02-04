@@ -20,7 +20,16 @@ ANCHOR:RegisterEvent'PLAYER_TARGET_CHANGED'
 local FRAMES = {}
 local ACTIVE_ENEMIES = {}
 local RECENT_ENEMIES = {}
-local DATA = {}
+local DATA
+do
+	local mt = {}
+	function mt:__index(key)
+		local data = {}
+		self[key] = data
+		return data
+	end
+	DATA = setmetatable({}, mt)
+end
 
 local SPLL_HEALCRIT = "(.+)%'s (.+) critically heals (.+) for (%d+)%a%."
 local SPLL_HEAL = "(.+)%'s (.+) heals (.+) for (%d+)%."
@@ -200,7 +209,6 @@ function CaptureEvent(name, spell)
 		end
 	end
 
-	DATA[name] = DATA[name] or {}
 	local data = DATA[name]
 	data.seen = GetTime()
 	if not data.class then
@@ -359,8 +367,13 @@ do
 		local pass = function() end
 		function TargetEnemy(name)
 			local now = GetTime()
-			local ready = now - lastTargetTime > 3 and now - (DATA[name] and DATA[name].scanned or 0) > getn(ACTIVE_ENEMIES) * 3
+			local highestPriority = 0
+			for _, enemy in ACTIVE_ENEMIES do
+				highestPriority = max(highestPriority, DATA[enemy] and DATA[enemy].priority or 1/0)
+			end
+			local ready = now - lastTargetTime > 3 and (DATA[name] and DATA[name].priority or 1/0) >= highestPriority
 			if ready and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+				DATA[name].priority = 0
 				local target = UnitName'target'
 				local _PlaySound, _UIErrorsFrame_OnEvent = PlaySound, UIErrorsFrame_OnEvent
 				_G.PlaySound, _G.UIErrorsFrame_OnEvent = pass, pass
@@ -368,7 +381,12 @@ do
 				if UnitName'target' ~= target then
 					(target and TargetLastTarget or ClearTarget)()
 					lastTargetTime = now
-				elseif DATA[name] then
+					for _, name in ACTIVE_ENEMIES do
+						if DATA[name] and DATA[name].priority then
+							DATA[name].priority = DATA[name].priority + 1
+						end
+					end
+				else
 					DATA[name].untargetable = true
 				end
 				_G.PlaySound, _G.UIErrorsFrame_OnEvent = _PlaySound, _UIErrorsFrame_OnEvent
@@ -380,11 +398,11 @@ end
 do
 	local f = CreateFrame'Frame'
 	function ScanUnit(id)
-		local data = DATA[UnitName(id)]
-		if data and UnitIsEnemy('player', id) and UnitPlayerControlled(id) then
+		if UnitExists(id) and UnitIsEnemy('player', id) and UnitPlayerControlled(id) then
+			local data = DATA[UnitName(id)]
 			data.untargetable = false
-			data.scanned = GetTime()
-			data.seen = data.scanned
+			data.priority = 0
+			data.seen = GetTime()
 			if not data.portrait then
 				local texture = f:CreateTexture(nil, 'OVERLAY')
 				texture:SetWidth(18)

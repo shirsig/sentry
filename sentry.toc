@@ -1,6 +1,6 @@
 ## Interface: 11200
 ## Title: sentry
-## Notes: sentry
+## Notes: Shows frames for nearby enemies
 ## Author: shirsig
 ## SavedVariables: sentry_settings
 sentry.lua
