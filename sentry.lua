@@ -371,7 +371,7 @@ do
 			for _, enemy in ACTIVE_ENEMIES do
 				highestPriority = max(highestPriority, DATA[enemy] and DATA[enemy].priority or 1/0)
 			end
-			local ready = now - lastTargetTime > 3 and (DATA[name] and DATA[name].priority or 1/0) >= highestPriority
+			local ready = now - lastTargetTime > 3 and (DATA[name] and DATA[name].priority or 1/0) == highestPriority
 			if ready and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
 				DATA[name].priority = 0
 				local target = UnitName'target'
