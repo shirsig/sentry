@@ -367,12 +367,14 @@ do
 		local pass = function() end
 		function TargetEnemy(name)
 			local now = GetTime()
+			if now - lastTargetTime > 3 then
+				return
+			end
 			local highestPriority = 0
 			for _, enemy in ACTIVE_ENEMIES do
 				highestPriority = max(highestPriority, DATA[enemy] and DATA[enemy].priority or 1/0)
 			end
-			local ready = now - lastTargetTime > 3 and (DATA[name] and DATA[name].priority or 1/0) == highestPriority
-			if ready and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
+			if (DATA[name].priority or 1/0) == highestPriority and not attacking and not shooting and not looting and GetComboPoints() == 0 and UnitName'target' ~= name then
 				DATA[name].priority = 0
 				local target = UnitName'target'
 				local _PlaySound, _UIErrorsFrame_OnEvent = PlaySound, UIErrorsFrame_OnEvent
@@ -382,7 +384,7 @@ do
 					(target and TargetLastTarget or ClearTarget)()
 					lastTargetTime = now
 					for _, name in ACTIVE_ENEMIES do
-						if DATA[name] and DATA[name].priority then
+						if DATA[name].priority then
 							DATA[name].priority = DATA[name].priority + 1
 						end
 					end
