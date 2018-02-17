@@ -367,7 +367,7 @@ do
 		local pass = function() end
 		function TargetEnemy(name)
 			local now = GetTime()
-			if now - lastTargetTime > 3 then
+			if now - lastTargetTime < 3 then
 				return
 			end
 			local highestPriority = 0
