@@ -358,7 +358,7 @@ do
 		f:RegisterEvent'LOOT_OPENED'
 		f:RegisterEvent'LOOT_CLOSED'
 		f:SetScript('OnEvent', function()
-			shooting = event == 'LOOT_OPENED'
+			looting = event == 'LOOT_OPENED'
 		end)
 	end
 
