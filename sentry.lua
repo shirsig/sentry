@@ -414,7 +414,8 @@ do
 			end
 			SetPortraitTexture(data.portrait, id)
 			local rankName, rankNumber = GetPVPRankInfo(UnitPVPRank(id))
-			data.class = UnitIsPlayer(id) and strupper(UnitClass(id)) or 'PET'
+			local _, class = UnitClass(id)
+			data.class = UnitIsPlayer(id) and class or 'PET'
 			data.level = UnitLevel(id) == -1 and 100 or UnitLevel(id)
 			data.rank = rankNumber
 			data.health = UnitHealth(id) / UnitHealthMax(id)
